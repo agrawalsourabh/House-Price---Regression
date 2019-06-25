@@ -1,5 +1,5 @@
 ## House Prices: Advanced Regression Techniques
-Kaggle Task <https://www.kaggle.com/c/house-prices-advanced-regression-techniques>
+Kaggle Task:  <https://www.kaggle.com/c/house-prices-advanced-regression-techniques>
 
 ![housesbanner](https://user-images.githubusercontent.com/8282374/60128590-a5033580-97b0-11e9-9541-cb0b8de5d993.png)
 
