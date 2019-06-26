@@ -115,4 +115,71 @@ ggplot(data = our.data[!is.na(our.data$SalePrice), ],
 
 ggsave("plot/LotConfigVsSP(Mean)_bar.png")
 
-# LotArea  
+# GarageQual
+# Check GarageQual and mean Sale Price
+ggplot(data = our.data[!is.na(our.data$SalePrice), ], 
+       mapping = aes(x = factor(GarageQual), y = SalePrice, label = "abc")) +
+  geom_bar(stat = 'summary', fun.y = 'mean', fill = "#b2593e", col = "#ad330d", alpha = 0.8) +
+  ggtitle("Garage Quality vs Sale Price (Mean)") +
+  xlab("Garage Quality") +
+  ylab("Sale Price") +
+  scale_y_continuous(breaks = seq(0, 300000, by = 50000), labels = comma) +
+  scale_x_discrete( label = c('none', 'Po', 'Fa','TA', 'Gd', 'Ex'))
+
+ggsave("plot/GarageQualVsSP(Mean)_bar.png")
+
+# GarageType
+# Check GarageType and mean Sale Price
+ggplot(data = our.data[!is.na(our.data$SalePrice), ], 
+       mapping = aes(x = GarageType, y = SalePrice)) +
+  geom_bar(stat = 'summary', fun.y = 'mean', fill = "#f2ef5e", col = "#fcf828", alpha = 0.8) +
+  ggtitle("Garage Type vs Sale Price (Mean)") +
+  xlab("Garage Type") +
+  ylab("Sale Price") +
+  scale_y_continuous(breaks = seq(0, 300000, by = 50000), labels = comma)
+
+ggsave("plot/GarageTypeVsSP(Mean)_bar.png")
+
+#
+# WORKSPACE SAVED
+#
+
+# Basement Quality
+# Check Basement Quality and mean Sale Price
+ggplot(data = our.data[!is.na(our.data$SalePrice), ], 
+       mapping = aes(x = factor(BsmtQual), y = SalePrice)) +
+  geom_bar(stat = 'summary', fun.y = 'mean', fill = "#92e89f", col = "#23ed42", alpha = 0.8) +
+  ggtitle("Basement Quality vs Sale Price (Mean)") +
+  xlab("Basement Quality") +
+  ylab("Sale Price") +
+  scale_y_continuous(breaks = seq(0, 300000, by = 50000), labels = comma) +
+  scale_x_discrete(label = c('none', 'Fa', 'TA', 'Gd', 'Ex'))
+
+ggsave("plot/BasementQualityVsSP(Mean)_bar.png")
+
+#BsmtCond
+ggplot(data = our.data[!is.na(our.data$SalePrice), ], 
+       mapping = aes(x = factor(BsmtCond), y = SalePrice)) +
+  geom_bar(stat = 'summary', fun.y = 'mean', fill = "#db3d3d", col = "#e00f0f", alpha = 0.8) +
+  ggtitle("Basement Condition vs Sale Price (Mean)") +
+  xlab("Basement Condition") +
+  ylab("Sale Price") +
+  scale_y_continuous(breaks = seq(0, 300000, by = 50000), labels = comma) +
+  scale_x_discrete(label = c('none', 'Po', 'Fa', 'TA', 'Gd'))
+
+ggsave("plot/BasementConditionVsSP(Mean)_bar.png")
+
+# MasVnrType
+ggplot(data = our.data[!is.na(our.data$SalePrice), ], 
+       mapping = aes(x = MasVnrType, y = SalePrice)) +
+  geom_bar(stat = 'summary', fun.y = 'mean', fill = "#d1d849", col = "#c3cc14", alpha = 0.8) +
+  ggtitle("Masonry veneer type vs Sale Price (Mean)") +
+  xlab("Masonry veneer type") +
+  ylab("Sale Price") +
+  scale_y_continuous(breaks = seq(0, 300000, by = 50000), labels = comma)
+
+ggsave("plot/MasVnrTypeVsSP(Mean)_bar.png")
+
+#
+# WORKSPACE SAVED
+#
