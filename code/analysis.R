@@ -1,6 +1,7 @@
 # installing packages
 install.packages("ggrepel")
 install.packages("knitr")
+install.packages("gridExtra")
 
 # loading packages
 library(naniar)
@@ -11,6 +12,7 @@ library(corrplot)
 library(plyr)
 library(ggrepel)
 library(knitr)
+library(gridExtra)
 
 # Importing data set
 
@@ -65,6 +67,7 @@ cor_numVar = cor_numVar[corHigh, corHigh]
 corrplot.mixed(cor_numVar, tl.col = "black", tl.pos = "lt")
 
 # Overall Quality
+
 
 # GrLivingArea - Above grade (ground) living area square feet
 # From the graph we find that row number 524 and 1299 have large ground area but low price,
@@ -374,3 +377,201 @@ table(our.data$MSZoning)
 #
 # WORKSPACE SAVED
 #
+
+# Kitchen Qualities
+# KitchenQual
+
+table(our.data$KitchenQual)
+our.data$Id[is.na(our.data$KitchenQual)]
+
+our.data[1556, c('KitchenQual', 'KitchenAbvGr')]
+
+# impute with most common value of KitchenQual
+our.data$KitchenQual[1556] = names(sort(table(our.data$KitchenQual), decreasing = T)[1])
+
+# KitchenQual - ordinal variable
+our.data$KitchenQual = as.integer(revalue(our.data$KitchenQual, qualities))
+
+# Utilities
+table(our.data$Utilities)
+our.data$Id[is.na(our.data$Utilities)]
+
+# Impute the most common values of Utilities
+our.data$Utilities[is.na(our.data$Utilities)] = names(sort(table(our.data$Utilities), decreasing = T)[1])
+
+# Utilities - ordinal value
+our.data$Utilities = as.integer(revalue(our.data$Utilities, c('ELO' = 1, 'NoSeWa' = 2, 
+                                                              'NoSewr' = 3, 'AllPub' = 4)))
+
+# Functional
+unique(our.data$Functional)
+table(our.data$Functional)
+
+# Impute with Typ
+our.data$Functional[is.na(our.data$Functional)] = "Typ"
+
+# Functional - ordinal
+our.data$Functional = as.integer(revalue(our.data$Functional, 
+                                         c('Sal' = 0, 'Sev' = 1, 'Maj2' = 2, 
+                                           'Maj1' = 3, 'Mod' = 4, 'Min2' = 5, 
+                                           'Min1' = 6, 'Typ' = 7)))
+
+# Exterior1st
+table(our.data$Exterior1st)
+
+# Impute with most common values
+our.data$Exterior1st[is.na(our.data$Exterior1st)] = names(sort(table(our.data$Exterior1st), decreasing = T)[1])
+
+# Exterior1st - not ordinal
+our.data$Exterior1st = as.factor(our.data$Exterior1st)
+
+# Exterior2nd
+table(our.data$Exterior2nd)
+
+# Impute with most common values
+our.data$Exterior2nd[is.na(our.data$Exterior2nd)] = names(sort(table(our.data$Exterior2nd), decreasing = T)[1])
+
+# Exterior2nd - not ordinal
+our.data$Exterior2nd = as.factor(our.data$Exterior2nd)
+
+# ExterQual - ordinal
+table(our.data$ExterQual)
+our.data$ExterQual = as.integer(revalue(our.data$ExterQual, qualities))
+
+# ExterCond - ordinal
+table(our.data$ExterCond)
+our.data$ExterCond = as.integer(revalue(our.data$ExterCond, qualities))
+
+# Electrical
+table(our.data$Electrical)
+
+# impute with most common value
+our.data$Electrical[is.na(our.data$Electrical)] = names(sort(table(our.data$Electrical), decreasing = T)[1])
+
+# Electrical - not ordinal
+our.data$Electrical = as.factor(our.data$Electrical)
+
+# Sale Type
+table(our.data$SaleType)
+which(is.na(our.data$SaleType))
+
+# impute with most common value
+our.data$SaleType[is.na(our.data$SaleType)] = names(sort(table(our.data$SaleType), decreasing = T)[1])
+
+# SaleType - not ordinal
+our.data$SaleType = as.factor(our.data$SaleType)
+
+# SaleCond - not ordinal
+our.data$SaleCondition = as.factor(our.data$SaleCondition)
+
+# CHARACTER COLUMN (CHARCOL)
+charcol = names(our.data[, sapply(our.data, is.character)])
+
+paste("Total Character column: ", length(charcol))
+
+# "MSZoning"
+# MSZoning - not ordinal
+
+our.data$MSZoning = as.factor(our.data$MSZoning)
+
+# "Street"   
+# Street have only two value so convert to integer
+
+our.data$Street = as.integer(revalue(our.data$Street, c('Grvl' = 0, 'Pave' = 1)))
+
+# "LandContour"  
+# Not ordinal
+
+our.data$LandContour = as.factor(our.data$LandContour)
+
+# "LandSlope"  
+# Ordinal
+
+our.data$LandSlope = as.integer(revalue(our.data$LandSlope, c('Sev' = 0, 'Mod' = 1, 'Gtl' = 2)))
+
+# "Neighborhood" 
+# not ordinal
+
+our.data$Neighborhood = as.factor(our.data$Neighborhood)
+
+# "Condition1"   
+# Not ordinal
+
+our.data$Condition1 = as.factor(our.data$Condition1)
+
+# "Condition2"  
+# not ordinal
+
+our.data$Condition2 = as.factor(our.data$Condition2)
+
+# "BldgType"  
+# not ordinal
+our.data$BldgType = as.factor(our.data$BldgType)
+
+# "HouseStyle"   
+# not ordinal
+
+our.data$HouseStyle = as.factor(our.data$HouseStyle)
+
+# "RoofStyle" 
+# not ordinal
+
+our.data$RoofStyle = as.factor(our.data$RoofStyle)
+
+# "RoofMatl"  
+# not ordinal
+
+our.data$RoofMatl = as.factor(our.data$RoofMatl)
+
+# "Foundation"
+# not ordinal
+
+our.data$Foundation = as.factor(our.data$Foundation)
+
+# "Heating"  
+# not ordinal
+
+our.data$Heating = as.factor(our.data$Heating)
+
+# "HeatingQC" 
+# ordinal
+
+our.data$HeatingQC = as.integer(revalue(our.data$HeatingQC, qualities))
+
+# "CentralAir"   
+# label encoding
+
+our.data$CentralAir = as.integer(revalue(our.data$CentralAir, c('N' = 0, 'Y' = 1)))
+
+
+# "PavedDrive"  
+# label encoding
+
+our.data$PavedDrive = as.integer(revalue(our.data$PavedDrive, c('N' = 0, 'P' = 1, 'Y' = 2)))
+
+#
+# WORKSPACE SAVED
+# 
+
+
+# 
+# ------------ some numerical to factor
+# 
+
+# YrSold
+
+unique(our.data$YrSold)
+
+# factorisation
+our.data$YrSold = as.factor(our.data$YrSold)
+
+# MoSold
+unique(our.data$MoSold)
+
+# factorisation
+our.data$MoSold = as.factor(our.data$MoSold)
+
+#
+# WORKSPACE SAVED
+# 
+

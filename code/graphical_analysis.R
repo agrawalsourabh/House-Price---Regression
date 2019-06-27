@@ -183,3 +183,90 @@ ggsave("plot/MasVnrTypeVsSP(Mean)_bar.png")
 #
 # WORKSPACE SAVED
 #
+
+# KitchenQual
+ggplot(data = our.data[!is.na(our.data$SalePrice), ], 
+       mapping = aes(x = factor(KitchenQual), y = SalePrice)) +
+  geom_bar(stat = 'summary', fun.y = 'mean', fill = "#e0bf5a", color = "#d1a315", alpha = 0.8) +
+  ggtitle(" Kitchen Quality vs Sale Price (Mean)") +
+  xlab("Kitchen Quality") +
+  ylab("Sale Price") +
+  scale_y_continuous(breaks = seq(0, 300000, by = 50000), labels = comma) +
+  scale_x_discrete(label = c('Fair', 'Average', 'Good', 'Excellent'))
+
+ggsave("plot/KitchenQualVsSP(Mean)_bar.png")
+
+# Functional
+ggplot(data = our.data[!is.na(our.data$SalePrice), ], 
+       mapping = aes(x = factor(Functional), y = SalePrice)) +
+  geom_bar(stat = 'summary', fun.y = 'mean', fill = "#80f2b6", col = "#1ceb7e", alpha = "0.8") +
+  ggtitle("Functional vs Sale Price(Mean)") +
+  xlab("Functional") +
+  ylab("Sale Price") +
+  scale_y_continuous(breaks = seq(0, 250000, by = 50000), labels = comma) +
+  scale_x_discrete(label = c('Sev', 'Maj2', 'Maj1', 'Mod', 'Min2', 'Min1', 'Typ'))
+
+ggsave("plot/FunctionalVsSP(Mean)_bar.png")
+
+# ExterQual
+our.data$ExterQual
+
+ggplot(data = our.data[!is.na(our.data$SalePrice), ], 
+       mapping = aes(x = factor(ExterQual), y = SalePrice)) +
+  geom_bar(stat = 'summary', fun.y = 'mean', fill = "#de8585", col = "#e30e0e", alpha = "0.8") +
+  ggtitle("ExterQual vs SalePrice(Mean)") +
+  xlab("ExterQual") +
+  ylab("Sale Price") +
+  scale_y_continuous(breaks = seq(0, 400000, by = 50000), label = comma) +
+  scale_x_discrete(label = c('Fa', 'TA', 'Gd', 'Ex'))
+
+ggsave("plot/ExterQualVsSP(Mean)_bar.png")
+
+# ExterCond
+our.data$ExterCond
+
+ggplot(data = our.data[!is.na(our.data$SalePrice), ], 
+       mapping = aes(x = factor(ExterCond), y = SalePrice)) +
+  geom_bar(stat = 'summary', fun.y = 'mean', fill = "#e9ed6d", col = "#e9f016", alpha = "0.8") +
+  ggtitle("ExterCond vs SalePrice(Mean)") +
+  xlab("ExterCond") +
+  ylab("Sale Price") +
+  scale_y_continuous(breaks = seq(0, 400000, by = 50000), label = comma) +
+  scale_x_discrete(label = c('Po', 'Fa', 'TA', 'Gd', 'Ex'))
+
+ggsave("plot/ExterCondVsSP(Mean)_bar.png")
+
+#
+# WORKSPACE SAVED
+# 
+
+our.data$MoSold
+# YrSold and MoSold
+par(mfrow = c(2, 2))
+ys = ggplot(data = our.data[!is.na(our.data$SalePrice ), ], 
+       mapping = aes(x = YrSold, y = SalePrice)) +
+  geom_bar(stat = 'summary', fun.y = 'mean', fill = '#83f7ea', col = '#16f7de', alpha = '0.8') +
+  ggtitle("YrSold vs Mean Sale Price") +
+  xlab("Year Sold") +
+  ylab("Sale Price")
+
+ms = ggplot(data = our.data[!is.na(our.data$SalePrice ), ], 
+       mapping = aes(x = MoSold, y = SalePrice)) +
+  geom_bar(stat = 'summary', fun.y = 'mean', fill = '#97b9e6', col = '#1771e8', alpha = '0.8') +
+  ggtitle("MoSold vs Mean Sale Price") +
+  xlab("Month Sold") +
+  ylab("Sale Price") +
+  scale_x_discrete(label = c('Jan', "Feb", "Mar", "Apr", "May", 
+                             "June", "July", "Aug", "Sep", "Oct", "Nov", "Dec")) +
+  theme(axis.text.x = element_text(angle = 45))
+
+grid.arrange(ys, ms, widths = c(1, 2))
+
+ggsave('plot/YrSold_MoSold Vs SalePrice.png')
+
+
+#
+# WORKSPACE SAVED
+# 
+
+
