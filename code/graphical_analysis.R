@@ -270,3 +270,20 @@ ggsave('plot/YrSold_MoSold Vs SalePrice.png')
 # 
 
 
+# Variable Importance - Top 20
+
+ggplot(data = imp_df[1:20, ], 
+       mapping = aes(x = reorder(Variable, MSE), y = MSE, fill = MSE)) +
+  geom_bar(stat = 'identity') +
+  coord_flip() +
+  ggtitle("Variable Importance - Top 20") +
+  xlab("Variables") +
+  ylab("MSE") +
+  theme(legend.position = 'none') +
+  scale_y_continuous(breaks = seq(0, 20, by = 2))
+
+ggsave('plot/variable_importance.png')
+
+#
+# WORKSPACE SAVED
+# 

@@ -2,6 +2,7 @@
 install.packages("ggrepel")
 install.packages("knitr")
 install.packages("gridExtra")
+install.packages("xgboost")
 
 # loading packages
 library(naniar)
@@ -13,6 +14,9 @@ library(plyr)
 library(ggrepel)
 library(knitr)
 library(gridExtra)
+library(randomForest)
+library(caret)
+library(xgboost)
 
 # Importing data set
 
@@ -575,3 +579,236 @@ our.data$MoSold = as.factor(our.data$MoSold)
 # WORKSPACE SAVED
 # 
 
+# MSSubClass 
+# MSSubClass - categorical variable convert it to factors
+our.data$MSSubClass = as.factor(our.data$MSSubClass)
+table(our.data$MSSubClass)
+
+
+#
+numericVars = which(sapply(our.data, is.numeric))
+catVars = which(sapply(our.data, is.factor))
+charcol = which(sapply(our.data, is.character))
+
+paste("Total Numeric Variables: " , length(numericVars))
+paste("Total Categorical Variables: " , length(catVars))
+paste("Total Character Variables: ", length(charcol))
+paste("Total variables: ", length(our.data))
+
+# Dropping column "Id" and "DataFrom"
+
+our.data$Id = NULL
+our.data$DataFrom = NULL
+
+# Check correlation
+numericVars = which(sapply(our.data, is.numeric))
+numericVarsName = names(numericVars)
+
+our.data_numVar = our.data[, numericVars]
+cor_numVar = cor(our.data_numVar, use = 'pairwise.complete.obs')
+
+# sort on decreasing correlation with sale price
+cor_sorted = as.matrix(sort(cor_numVar[, 'SalePrice'], decreasing = T))
+
+corHigh = names(which(apply(cor_sorted, 1, function(x){
+  abs(x) > 0.5
+})))
+
+cor_numVar = cor_numVar[corHigh, corHigh]
+corrplot.mixed(cor_numVar, tl.pos = 'lt', tl.col = 'black')
+
+# Visualising the importance of Variable using quick random forest
+quick_rf = randomForest(x = our.data[1:1460, -80], y = our.data$SalePrice[1:1460], ntree = 100, 
+                        importance = T)
+imp_rf = importance(quick_rf)
+imp_df = data.frame(Variable = rownames(imp_rf), MSE = imp_rf[, 1])
+
+imp_df = imp_df[order(imp_df$MSE, decreasing = T), ]
+
+#
+# WORKSPACE SAVED
+# 
+
+# Bathroom Variables
+# There are total 4 Bathroom Variables - BsmtFullBath, BsmtHalfBath, FullBath, HalfBath
+# Accomodate them to one Variable - TotalBathroom
+
+our.data$TotalBathroom = (our.data$BsmtFullBath) + (our.data$BsmtHalfBath * 0.5) +
+  (our.data$FullBath) + (our.data$HalfBath * 0.5)
+
+
+# Check correlation b/w 1stFlrSF, 2ndFlrSF, LowQualFinSF and GrLivArea
+# I think GrLivArea = 1stFlrSF + 2ndFlrSF + LowQualFinSF
+
+cor(our.data$GrLivArea, our.data$X1stFlrSF + our.data$X2ndFlrSF + our.data$LowQualFinSF) # Highly correlated
+
+# Lets make a copy of our data frame
+our.data.mod = our.data
+
+# Dropping features form our.data.mod
+# Bathroom Variables
+our.data.mod$FullBath = NULL
+our.data.mod$BsmtFullBath = NULL
+our.data.mod$HalfBath = NULL
+our.data.mod$BsmtHalfBath = NULL
+
+# Living area variables
+our.data.mod$X1stFlrSF = NULL
+our.data.mod$X2ndFlrSF = NULL
+our.data.mod$LowQualFinSF = NULL
+# our.data.mod$TotalLivArea = NULL
+
+
+# Creating dummy variables for categorical variables
+dummy.model = dummyVars(SalePrice ~ ., data = our.data.mod)
+
+# Create dummy variable using predict
+our.data.mod.dummy = predict(dummy.model, newdata = our.data.mod)
+our.data.mod.dummy = data.frame(our.data.mod.dummy)
+
+str(our.data.mod.dummy)
+which(colnames(our.data.mod.dummy) == 'SalePrice')
+
+sum(is.na(our.data.mod.dummy))
+
+# Preprocess the data
+preprocess_range_model = preProcess(our.data.mod.dummy, method = 'range')
+our.data.mod.dummy.pp = predict(preprocess_range_model, our.data.mod.dummy)
+
+our.data.mod.dummy.pp$SalePrice = our.data$SalePrice
+
+# # Feature Scaling using Recursive Feature Elimination (rfe)
+# ctrl = rfeControl(functions = rfFuncs, 
+#                   method = 'repeatedcv', 
+#                   repeats = 5, 
+#                   verbose = F)
+# 
+# lmProfile = rfe(x = our.data.mod.dummy.pp[1:1460, -253], 
+#                 y = our.data.mod.dummy.pp$SalePrice[1:1460], 
+#                 rfeControl = ctrl, 
+#                 sizes = 3)
+# 
+# lmProfile
+
+
+#
+# WORKSPACE SAVED
+# 
+
+# Sampling the data
+train_data = our.data.mod.dummy.pp[!is.na(our.data.mod.dummy.pp$SalePrice), ]
+test_data = our.data.mod.dummy.pp[is.na(our.data.mod.dummy.pp$SalePrice), ]
+
+
+# Splitting the train_data
+indexes = createDataPartition(train_data$SalePrice, 
+                              times = 1, 
+                              p = 0.7, 
+                              list = F)
+trd = train_data[indexes, ]
+tsd = train_data[-indexes, ]
+
+
+# ---------------------------LM Model-------------------------------
+
+# fit a linear regressor model on trd data
+lm.model = lm(formula = SalePrice ~., 
+              data = trd)
+summary(lm.model)
+
+our.predict.lm = predict(lm.model, newdata = test_data)
+
+# our.result - lm 
+our.result = data.frame(Id = test$Id, SalePrice = our.predict.lm)
+write.csv(our.result, file = "output/submission_lm.csv", row.names = F)
+
+# fit a linear regressor model on full training data
+lm.model.full = lm(formula = SalePrice ~., 
+              data = train_data)
+summary(lm.model.full)
+
+our.predict.lm.full = predict(lm.model.full, newdata = test_data)
+
+# our.result - lm Full
+our.result = data.frame(Id = test$Id, SalePrice = our.predict.lm.full)
+write.csv(our.result, file = "output/submission_lm_full.csv", row.names = F)
+
+# ------------------------GLM Model-------------------------------------
+# fit into a model
+
+glm.model.full = glm(formula = SalePrice ~., data = train_data)
+
+summary(glm.model.full)
+
+
+# Predict tsd values
+our.predict.glm.full = predict(glm.model.full, newdata = test_data)
+
+# our.result - glm Full
+our.result = data.frame(Id = test$Id, SalePrice = our.predict.glm.full)
+write.csv(our.result, file = "output/submission_glm_full.csv", row.names = F)
+
+# fit into a model
+
+glm.model= glm(formula = SalePrice ~., data = trd)
+
+summary(glm.model)
+
+
+# Predict tsd values
+our.predict.glm = predict(glm.model, newdata = test_data)
+
+# our.result - glm Full
+our.result = data.frame(Id = test$Id, SalePrice = our.predict.glm)
+write.csv(our.result, file = "output/submission_glm.csv", row.names = F)
+
+#
+# WORKSPACE SAVED
+# 
+
+
+
+# ---------------------------- XGBOOST--------------------------------------
+xg.model = xgboost(data = as.matrix(train_data[-253]), 
+                   label = train_data$SalePrice, 
+                   nrounds = 10)
+our.predict.xgboost = predict(xg.model, newdata = as.matrix(test_data[-253]))
+summary(xg.model)
+
+# our.result - xgboost
+our.result = data.frame(Id = test$Id, SalePrice = our.predict.xgboost)
+write.csv(our.result, file = "output/submission_xgb.csv", row.names = F)
+
+
+
+#
+# WORKSPACE SAVED
+# 
+
+# ------ XGBoost with CARET --------------------
+xgb_trcontrol = trainControl(method = "cv", 
+                             number = 5, 
+                             allowParallel = F, 
+                             verboseIter = F, 
+                             returnData = F)
+
+xgbGrid = expand.grid(nrounds = c(50,100),  
+                       max_depth = c(10, 15, 20, 25),
+                       colsample_bytree = seq(0.5, 0.9, length.out = 5),
+                       eta = 0.1,
+                       gamma=0,
+                       min_child_weight = 1,
+                       subsample = 1)
+
+xgb.model.tuned = train(train_data[-253], 
+                        train_data$SalePrice, 
+                        trControl = xgb_trcontrol, 
+                        tuneGrid = xgbGrid, 
+                        method = 'xgbTree')
+y_pred_xgb_tuned = predict(xgb.model.tuned, test_data)
+
+xgb.model.tuned$bestTune
+
+# our.result - xgboost - tuned
+our.result = data.frame(Id = test$Id, SalePrice = y_pred_xgb_tuned)
+write.csv(our.result, file = "output/submission_xgb_tuned.csv", row.names = F)
